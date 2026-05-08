@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Social Wars</title>
+    <link rel="shortcut icon" href="https://web.archive.org/web/20140601135001im_/https://fbcdn-photos-e-a.akamaihd.net/hphotos-ak-xpa1/t39.2080-0/851579_577252918974734_1364279235_n.gif"/>
+    <link rel="icon" type="image/gif" href="https://web.archive.org/web/20140601135001im_/https://fbcdn-photos-e-a.akamaihd.net/hphotos-ak-xpa1/t39.2080-0/851579_577252918974734_1364279235_n.gif"/>
+    <link rel="stylesheet" href="css/facebook.css"/>
+    <style>
+        .sw-box {
+            width: 380px;
+            margin: 60px auto 0 auto;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 20px;
+            font-family: 'lucida grande', tahoma, verdana, arial, sans-serif;
+            font-size: 13px;
+        }
+        .sw-logo { text-align: center; margin-bottom: 14px; }
+        .sw-logo img { width: 180px; }
+        .sw-version { text-align: center; color: #777; font-size: 11px; margin-bottom: 16px; }
+        .sw-tabs { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 16px; }
+        .sw-tab {
+            flex: 1; text-align: center; padding: 8px 0; cursor: pointer;
+            color: #555; font-weight: bold; font-size: 13px;
+            border-bottom: 3px solid transparent; margin-bottom: -2px;
+        }
+        .sw-tab.active { color: #3b5998; border-bottom: 3px solid #3b5998; }
+        .sw-form { display: none; }
+        .sw-form.active { display: block; }
+        .sw-field { margin-bottom: 10px; }
+        .sw-field label { display: block; font-weight: bold; margin-bottom: 3px; color: #333; }
+
+        /* Email input */
+        .sw-field input[type="email"] {
+            width: 100%; height: 34px; padding: 0 8px;
+            border: 1px solid #ccc; border-radius: 3px;
+            font-size: 13px; box-sizing: border-box;
+        }
+        .sw-field input[type="email"]:focus { border-color: #3b5998; outline: none; }
+
+        /* Password wrap - Outlook style */
+        .sw-pass-wrap {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .sw-pass-wrap:focus-within { border-color: #3b5998; }
+        .sw-pass-wrap input {
+            flex: 1;
+            height: 34px;
+            padding: 0 8px;
+            border: none;
+            font-size: 13px;
+            outline: none;
+            box-sizing: border-box;
+        }
+        .sw-toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0 10px;
+            height: 34px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            border-left: 1px solid #e0e0e0;
+            color: #444;
+            font-size: 12px;
+            white-space: nowrap;
+            font-family: 'lucida grande', tahoma, verdana, arial, sans-serif;
+        }
+        .sw-toggle-btn:hover { background: #f5f5f5; }
+        .sw-toggle-btn svg { flex-shrink: 0; }
+
+        /* Password requirements */
+        .sw-reqs {
+            background: #f7f7f7;
+            border: 1px solid #e0e0e0;
+            border-radius: 3px;
+            padding: 8px 10px;
+            margin-top: 6px;
+            display: none;
+        }
+        .sw-reqs.visible { display: block; }
+        .sw-req {
+            font-size: 11px;
+            color: #c0392b;
+            margin: 2px 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .sw-req.ok { color: #1e8449; }
+        .sw-req::before { content: '✗'; font-weight: bold; }
+        .sw-req.ok::before { content: '✓'; }
+
+        .sw-row {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 12px; font-size: 12px;
+        }
+        .sw-remember { display: flex; align-items: center; gap: 5px; color: #555; }
+        .sw-forgot { color: #3b5998; text-decoration: none; font-size: 12px; }
+        .sw-forgot:hover { text-decoration: underline; }
+        .sw-btn {
+            width: 100%; height: 32px; background: #3b5998;
+            color: #fff; border: none; border-radius: 3px;
+            font-size: 14px; font-weight: bold; cursor: pointer;
+        }
+        .sw-btn:hover { background: #2d4373; }
+        .sw-btn:disabled { background: #aaa; cursor: not-allowed; }
+        .sw-divider {
+            text-align: center; margin: 14px 0 10px 0; color: #aaa;
+            font-size: 12px; border-top: 1px solid #eee; padding-top: 12px;
+        }
+        .sw-create { text-align: center; font-size: 12px; }
+        .sw-create a { color: #3b5998; font-weight: bold; text-decoration: none; }
+        .sw-create a:hover { text-decoration: underline; }
+        .sw-msg {
+            padding: 8px 10px; border-radius: 3px; font-size: 12px;
+            margin-bottom: 10px; display: none;
+        }
+        .sw-msg.error { background: #fdecea; color: #c0392b; border: 1px solid #e74c3c; display: block; }
+        .sw-msg.success { background: #eafaf1; color: #1e8449; border: 1px solid #27ae60; display: block; }
+        .sw-msg.info { background: #eaf4fb; color: #1a5276; border: 1px solid #2980b9; display: block; }
+        .sw-forgot-panel { display: none; }
+        .sw-forgot-panel.active { display: block; }
+        .sw-back {
+            color: #3b5998; cursor: pointer; font-size: 12px;
+            margin-bottom: 12px; display: inline-block;
+        }
+        .sw-back:hover { text-decoration: underline; }
+    </style>
+</head>
+<body class="ego_wide canvas center_fixed_width_app fbx UIPage_LoggedOut liquid hideBanner Locale_en_US">
+
+<div class="sw-box">
+    <div class="sw-logo">
+        <img src="img/logo.png" alt="Social Wars"/>
+    </div>
+    <div class="sw-version" id="versionText">{{version}}</div>
+
+    <div class="sw-msg" id="msgBox"></div>
+
+    <!-- FORGOT PASSWORD PANEL -->
+    <div class="sw-forgot-panel" id="forgotPanel">
+        <span class="sw-back" id="backToLogin">← Back to Login</span>
+        <div class="sw-field">
+            <label for="resetEmail">Email address</label>
+            <input type="email" id="resetEmail" placeholder="Enter your email"/>
+        </div>
+        <button class="sw-btn" id="resetBtn">Send Reset Email</button>
+    </div>
+
+    <!-- MAIN PANEL -->
+    <div id="mainPanel">
+        <div class="sw-tabs">
+            <div class="sw-tab active" id="tabLogin" onclick="switchTab('login')">Log In</div>
+            <div class="sw-tab" id="tabRegister" onclick="switchTab('register')">Register</div>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <div class="sw-form active" id="formLogin">
+            <div class="sw-field">
+                <label for="loginEmail">Email address</label>
+                <input type="email" id="loginEmail" placeholder="Email address"/>
+            </div>
+            <div class="sw-field">
+                <label>Password</label>
+                <div class="sw-pass-wrap">
+                    <input type="password" id="loginPass" placeholder="Password"/>
+                    <button type="button" class="sw-toggle-btn" id="toggleLogin">
+                        <svg id="iconLogin" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        <span id="labelLogin">Show password</span>
+                    </button>
+                </div>
+            </div>
+            <div class="sw-row">
+                <label class="sw-remember">
+                    <input type="checkbox" id="rememberMe"/> Remember me
+                </label>
+                <a class="sw-forgot" id="forgotLink" href="#">Forgot password?</a>
+            </div>
+            <button class="sw-btn" id="loginBtn">Log In</button>
+            <div class="sw-divider"></div>
+            <div class="sw-create">
+                Don't have an account? <a href="#" onclick="switchTab('register')">Create a free account now</a>
+            </div>
+        </div>
+
+        <!-- REGISTER FORM -->
+        <div class="sw-form" id="formRegister">
+            <div class="sw-field">
+                <label for="regEmail">Email address</label>
+                <input type="email" id="regEmail" placeholder="Email address"/>
+            </div>
+            <div class="sw-field">
+                <label>Password</label>
+                <div class="sw-pass-wrap">
+                    <input type="password" id="regPass" placeholder="Password"/>
+                    <button type="button" class="sw-toggle-btn" id="toggleReg">
+                        <svg id="iconReg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        <span id="labelReg">Show password</span>
+                    </button>
+                </div>
+                <div class="sw-reqs" id="passReqs">
+                    <div class="sw-req" id="req-upper">Uppercase letter (A-Z)</div>
+                    <div class="sw-req" id="req-lower">Lowercase letter (a-z)</div>
+                    <div class="sw-req" id="req-number">Number (0-9)</div>
+                    <div class="sw-req" id="req-special">Special character (!@#$...)</div>
+                    <div class="sw-req" id="req-min">Minimum 6 characters</div>
+                    <div class="sw-req" id="req-max">Maximum 12 characters</div>
+                </div>
+            </div>
+            <div class="sw-field">
+                <label>Confirm Password</label>
+                <div class="sw-pass-wrap">
+                    <input type="password" id="regPassConfirm" placeholder="Confirm password"/>
+                    <button type="button" class="sw-toggle-btn" id="toggleConfirm">
+                        <svg id="iconConfirm" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        <span id="labelConfirm">Show password</span>
+                    </button>
+                </div>
+            </div>
+            <button class="sw-btn" id="registerBtn">Create Account</button>
+            <div class="sw-divider"></div>
+            <div class="sw-create">
+                Already have an account? <a href="#" onclick="switchTab('login')">Log In</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SVG icons -->
+<svg style="display:none">
+    <symbol id="svg-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+        <circle cx="12" cy="12" r="3"/>
+    </symbol>
+    <symbol id="svg-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+        <line x1="1" y1="1" x2="23" y2="23"/>
+    </symbol>
+</svg>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, setPersistence, browserLocalPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDo6z9MrH-icSD85Q8lylaBMCj66gHbDs4",
+        authDomain: "social-wars-2a532.firebaseapp.com",
+        projectId: "social-wars-2a532",
+        storageBucket: "social-wars-2a532.firebasestorage.app",
+        messagingSenderId: "540372566529",
+        appId: "1:540372566529:web:f419eb34cfa4d4a41b3600",
+        measurementId: "G-TYZNPG9Z8F"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    function showMsg(text, type) {
+        const box = document.getElementById('msgBox');
+        box.textContent = text;
+        box.className = 'sw-msg ' + type;
+    }
+    function clearMsg() {
+        const box = document.getElementById('msgBox');
+        box.className = 'sw-msg';
+        box.textContent = '';
+    }
+
+    // ── SHOW/HIDE PASSWORD (5s auto-hide) ──
+    function setupToggle(btnId, inputId, iconId, labelId) {
+        let timer = null;
+        const btn = document.getElementById(btnId);
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        const label = document.getElementById(labelId);
+
+        const svgEye = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+        const svgEyeOff = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`;
+
+        function hide() {
+            input.type = 'password';
+            icon.innerHTML = svgEye;
+            label.textContent = 'Show password';
+        }
+
+        btn.addEventListener('click', () => {
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerHTML = svgEyeOff;
+                label.textContent = 'Hide password';
+                if (timer) clearTimeout(timer);
+                timer = setTimeout(hide, 3000);
+            } else {
+                hide();
+                if (timer) clearTimeout(timer);
+            }
+        });
+    }
+
+    setupToggle('toggleLogin', 'loginPass', 'iconLogin', 'labelLogin');
+    setupToggle('toggleReg', 'regPass', 'iconReg', 'labelReg');
+    setupToggle('toggleConfirm', 'regPassConfirm', 'iconConfirm', 'labelConfirm');
+
+    // ── PASSWORD REQUIREMENTS ──
+    const regPassInput = document.getElementById('regPass');
+    const passReqs = document.getElementById('passReqs');
+
+    function checkReqs(val) {
+        const rules = {
+            'req-upper':   /[A-Z]/.test(val),
+            'req-lower':   /[a-z]/.test(val),
+            'req-number':  /[0-9]/.test(val),
+            'req-special': /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(val),
+            'req-min':     val.length >= 6,
+            'req-max':     val.length <= 12,
+        };
+        for (const [id, ok] of Object.entries(rules)) {
+            document.getElementById(id).classList.toggle('ok', ok);
+        }
+        return Object.values(rules).every(Boolean);
+    }
+
+    regPassInput.addEventListener('focus', () => passReqs.classList.add('visible'));
+    regPassInput.addEventListener('blur', () => { if (!regPassInput.value) passReqs.classList.remove('visible'); });
+    regPassInput.addEventListener('input', () => checkReqs(regPassInput.value));
+
+    // ── LOGIN ──
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+        clearMsg();
+        const email = document.getElementById('loginEmail').value.trim();
+        const pass = document.getElementById('loginPass').value;
+        const remember = document.getElementById('rememberMe').checked;
+        if (!email || !pass) { showMsg('Please fill in all fields.', 'error'); return; }
+        try {
+            await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
+            const result = await signInWithEmailAndPassword(auth, email, pass);
+            if (!result.user.emailVerified) {
+                showMsg('Please verify your email before logging in. Check your inbox.', 'error');
+                await auth.signOut();
+                return;
+            }
+            window.location.href = 'play.html';
+        } catch (e) {
+            showMsg(firebaseError(e.code), 'error');
+        }
+    });
+
+    // ── REGISTER ──
+    document.getElementById('registerBtn').addEventListener('click', async () => {
+        clearMsg();
+        const email = document.getElementById('regEmail').value.trim();
+        const pass = document.getElementById('regPass').value;
+        const confirm = document.getElementById('regPassConfirm').value;
+        if (!email || !pass || !confirm) { showMsg('Please fill in all fields.', 'error'); return; }
+        if (!checkReqs(pass)) {
+            passReqs.classList.add('visible');
+            showMsg('Password does not meet the requirements.', 'error');
+            return;
+        }
+        if (pass !== confirm) { showMsg('Passwords do not match.', 'error'); return; }
+        try {
+            const result = await createUserWithEmailAndPassword(auth, email, pass);
+            await sendEmailVerification(result.user);
+            await auth.signOut();
+            showMsg('Account created! Check your email to verify your account before logging in.', 'success');
+            switchTab('login');
+        } catch (e) {
+            showMsg(firebaseError(e.code), 'error');
+        }
+    });
+
+    // ── FORGOT PASSWORD ──
+    document.getElementById('forgotLink').addEventListener('click', (e) => {
+        e.preventDefault();
+        clearMsg();
+        document.getElementById('mainPanel').style.display = 'none';
+        document.getElementById('forgotPanel').classList.add('active');
+    });
+    document.getElementById('backToLogin').addEventListener('click', () => {
+        clearMsg();
+        document.getElementById('forgotPanel').classList.remove('active');
+        document.getElementById('mainPanel').style.display = 'block';
+    });
+    document.getElementById('resetBtn').addEventListener('click', async () => {
+        clearMsg();
+        const email = document.getElementById('resetEmail').value.trim();
+        if (!email) { showMsg('Please enter your email address.', 'error'); return; }
+        try {
+            await sendPasswordResetEmail(auth, email);
+            showMsg('Password reset email sent! Check your inbox.', 'success');
+        } catch (e) {
+            showMsg(firebaseError(e.code), 'error');
+        }
+    });
+
+    function firebaseError(code) {
+        const errors = {
+            'auth/invalid-email': 'Invalid email address.',
+            'auth/user-not-found': 'No account found with this email.',
+            'auth/wrong-password': 'Incorrect password.',
+            'auth/email-already-in-use': 'This email is already registered.',
+            'auth/weak-password': 'Password is too weak.',
+            'auth/too-many-requests': 'Too many attempts. Try again later.',
+            'auth/invalid-credential': 'Invalid email or password.',
+            'auth/network-request-failed': 'Network error. Check your connection.',
+        };
+        return errors[code] || 'An error occurred. Please try again.';
+    }
+</script>
+
+<script>
+    function switchTab(tab) {
+        document.getElementById('formLogin').classList.remove('active');
+        document.getElementById('formRegister').classList.remove('active');
+        document.getElementById('tabLogin').classList.remove('active');
+        document.getElementById('tabRegister').classList.remove('active');
+        if (tab === 'login') {
+            document.getElementById('formLogin').classList.add('active');
+            document.getElementById('tabLogin').classList.add('active');
+        } else {
+            document.getElementById('formRegister').classList.add('active');
+            document.getElementById('tabRegister').classList.add('active');
+        }
+    }
+</script>
+
+</body>
+</html>
