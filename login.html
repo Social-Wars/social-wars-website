@@ -153,7 +153,7 @@
             <label for="resetEmail">Email address</label>
             <input type="email" id="resetEmail" placeholder="Enter your email"/>
         </div>
-        <button class="sw-btn" id="resetBtn">Send Email</button>
+        <button class="sw-btn" id="resetBtn">Send Reset Email</button>
     </div>
 
     <!-- MAIN PANEL -->
@@ -293,12 +293,6 @@
         const icon = document.getElementById(iconId);
         const label = document.getElementById(labelId);
 
-        // Hide button initially
-        btn.style.display = 'none';
-        input.addEventListener('input', () => {
-            btn.style.display = input.value.length > 0 ? 'flex' : 'none';
-        });
-
         const svgEye = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
         const svgEyeOff = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`;
 
@@ -356,8 +350,6 @@
         const pass = document.getElementById('loginPass').value;
         const remember = document.getElementById('rememberMe').checked;
         if (!email || !pass) { showMsg('Please fill in all fields.', 'error'); return; }
-        const emailErr = validateEmail(email);
-        if (emailErr) { showMsg(emailErr, 'error'); return; }
         try {
             await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
             const result = await signInWithEmailAndPassword(auth, email, pass);
@@ -379,8 +371,6 @@
         const pass = document.getElementById('regPass').value;
         const confirm = document.getElementById('regPassConfirm').value;
         if (!email || !pass || !confirm) { showMsg('Please fill in all fields.', 'error'); return; }
-        const emailErr = validateEmail(email);
-        if (emailErr) { showMsg(emailErr, 'error'); return; }
         if (!checkReqs(pass)) {
             passReqs.classList.add('visible');
             showMsg('Password does not meet the requirements.', 'error');
@@ -414,8 +404,6 @@
         clearMsg();
         const email = document.getElementById('resetEmail').value.trim();
         if (!email) { showMsg('Please enter your email address.', 'error'); return; }
-        const resetEmailErr = validateEmail(email);
-        if (resetEmailErr) { showMsg(resetEmailErr, 'error'); return; }
         try {
             await sendPasswordResetEmail(auth, email);
             showMsg('Password reset email sent! Check your inbox.', 'success');
@@ -423,61 +411,6 @@
             showMsg(firebaseError(e.code), 'error');
         }
     });
-
-    // ── EMAIL VALIDATION ──
-    const ALLOWED_DOMAINS = [
-        'gmail.com','googlemail.com',
-        'outlook.com','hotmail.com','hotmail.es','hotmail.co.uk','live.com','live.es','msn.com',
-        'yahoo.com','yahoo.es','yahoo.co.uk','yahoo.fr','yahoo.de',
-        'icloud.com','me.com','mac.com',
-        'aol.com','protonmail.com','proton.me',
-        'zoho.com','yandex.com','yandex.ru',
-        'gmx.com','gmx.net','gmx.de',
-        'mail.com','tutanota.com','fastmail.com','fastmail.fm'
-    ];
-
-    function validateEmail(email) {
-        if (!email) return 'Please enter your email address.';
-        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!regex.test(email)) return 'Invalid email address format.';
-        const domain = email.split('@')[1].toLowerCase();
-        if (!ALLOWED_DOMAINS.includes(domain)) {
-            return 'Only personal email addresses are allowed (Gmail, Outlook, Yahoo, iCloud, etc.). Temporary or VPN emails are not accepted.';
-        }
-        return null;
-    }
-
-    // Inline email feedback
-    function setupEmailFeedback(inputId) {
-        const input = document.getElementById(inputId);
-        input.addEventListener('blur', () => {
-            const err = validateEmail(input.value.trim());
-            let feedback = input.parentElement.querySelector('.email-feedback');
-            if (!feedback) {
-                feedback = document.createElement('div');
-                feedback.className = 'email-feedback';
-                feedback.style.cssText = 'font-size:11px;margin-top:3px;';
-                input.parentElement.appendChild(feedback);
-            }
-            if (err && input.value.trim()) {
-                feedback.style.color = '#c0392b';
-                feedback.textContent = '✗ ' + err;
-            } else if (!err && input.value.trim()) {
-                feedback.style.color = '#1e8449';
-                feedback.textContent = '✓ Valid email address';
-            } else {
-                feedback.textContent = '';
-            }
-        });
-        input.addEventListener('input', () => {
-            const feedback = input.parentElement.querySelector('.email-feedback');
-            if (feedback) feedback.textContent = '';
-        });
-    }
-
-    setupEmailFeedback('loginEmail');
-    setupEmailFeedback('regEmail');
-    setupEmailFeedback('resetEmail');
 
     function firebaseError(code) {
         const errors = {
