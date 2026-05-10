@@ -3,11 +3,227 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <meta http-equiv="refresh" content="0; url=login.html"/>
-    <title>Social Wars</title>
+    <title>Social Wars - System Check</title>
     <link rel="shortcut icon" href="https://web.archive.org/web/20140601135001im_/https://fbcdn-photos-e-a.akamaihd.net/hphotos-ak-xpa1/t39.2080-0/851579_577252918974734_1364279235_n.gif"/>
     <link rel="icon" type="image/gif" href="https://web.archive.org/web/20140601135001im_/https://fbcdn-photos-e-a.akamaihd.net/hphotos-ak-xpa1/t39.2080-0/851579_577252918974734_1364279235_n.gif"/>
+    <style>
+        body { 
+            background: #e9ebee; 
+            font-family: 'lucida grande', tahoma, verdana, arial, sans-serif;
+            display: flex; justify-content: center; align-items: center; height: 100vh; margin:0;
+        }
+        .check-box {
+            background: white; border: 1px solid #ccc; border-radius: 8px;
+            padding: 30px; text-align: left; width: 420px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .check-box h1 { color: #3b5998; text-align: center; margin-bottom: 20px; }
+        .check-row { display: flex; align-items: center; padding: 6px 0; }
+        .check-icon { width: 24px; font-size: 18px; margin-right: 10px; text-align: center; }
+        .check-label { flex: 1; font-size: 14px; color: #333; }
+        .error-msg { color: #c0392b; margin: 15px 0; font-size: 14px; font-weight: bold; display: none; }
+        .all-ok { color: #1e8449; margin: 15px 0; font-size: 14px; font-weight: bold; display: none; }
+        button { 
+            background: #3b5998; color: white; border: none; padding: 8px 20px; 
+            border-radius: 3px; font-size: 14px; cursor: pointer; margin-top: 15px; width: 100%;
+        }
+        button:hover { background: #2d4373; }
+        button:disabled { background: #aaa; cursor: not-allowed; }
+    </style>
 </head>
 <body>
+<div class="check-box">
+    <h1>Social Wars</h1>
+    <div id="checks">
+        <div class="check-row" id="check-anti-frame"><span class="check-icon">⏳</span><span class="check-label">Anti‑frame protection</span></div>
+        <div class="check-row" id="check-webdriver"><span class="check-icon">⏳</span><span class="check-label">Browser automation detection</span></div>
+        <div class="check-row" id="check-adblock"><span class="check-icon">⏳</span><span class="check-label">Ad blocker verification</span></div>
+        <div class="check-row" id="check-privacy"><span class="check-icon">⏳</span><span class="check-label">Privacy browser check</span></div>
+        <div class="check-row" id="check-google"><span class="check-icon">⏳</span><span class="check-label">Google connectivity</span></div>
+        <div class="check-row" id="check-googleapis"><span class="check-icon">⏳</span><span class="check-label">Google APIs</span></div>
+        <div class="check-row" id="check-firebase-auth"><span class="check-icon">⏳</span><span class="check-label">Firebase Auth</span></div>
+        <div class="check-row" id="check-firebase-storage"><span class="check-icon">⏳</span><span class="check-label">Firebase Storage</span></div>
+        <div class="check-row" id="check-session"><span class="check-icon">⏳</span><span class="check-label">Session validation</span></div>
+    </div>
+    <div id="global-error" class="error-msg"></div>
+    <div id="all-ok-msg" class="all-ok">✅ All checks passed. Redirecting...</div>
+    <button id="retry-btn" style="display:none" onclick="location.reload()">Retry All Checks</button>
+</div>
+
+<script>
+    (async function() {
+        const checks = {
+            'check-anti-frame': false,
+            'check-webdriver': false,
+            'check-adblock': false,
+            'check-privacy': false,
+            'check-google': false,
+            'check-googleapis': false,
+            'check-firebase-auth': false,
+            'check-firebase-storage': false,
+            'check-session': false
+        };
+
+        function setCheck(id, success, message) {
+            const row = document.getElementById(id);
+            const icon = row.querySelector('.check-icon');
+            icon.textContent = success ? '✅' : '❌';
+            if (!success && message) {
+                row.querySelector('.check-label').textContent += ' (' + message + ')';
+            }
+            checks[id] = success;
+        }
+
+        function showGlobalError(msg) {
+            document.getElementById('global-error').style.display = 'block';
+            document.getElementById('global-error').textContent = msg;
+            document.getElementById('retry-btn').style.display = 'block';
+        }
+
+        async function fetchWithTimeout(url, timeout = 3000) {
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), timeout);
+            try {
+                const response = await fetch(url, { mode: 'no-cors', signal: controller.signal });
+                clearTimeout(id);
+                // no-cors opaque response – any response means network reachable
+                return true;
+            } catch (err) {
+                clearTimeout(id);
+                throw err;
+            }
+        }
+
+        // 1. Anti‑frame
+        if (window.top !== window.self) {
+            setCheck('check-anti-frame', false, 'Framed access denied');
+            showGlobalError('Access denied: page loaded in a frame.');
+            return;
+        }
+        setCheck('check-anti-frame', true);
+
+        // 2. WebDriver
+        if (navigator.webdriver) {
+            setCheck('check-webdriver', false, 'Automated browser detected');
+            showGlobalError('Automated browsing is not allowed.');
+            return;
+        }
+        setCheck('check-webdriver', true);
+
+        // 3. Adblock detection (bait element)
+        const adTest = document.createElement('div');
+        adTest.className = 'adsbox';
+        adTest.style.height = '1px';
+        adTest.style.width = '1px';
+        adTest.style.position = 'absolute';
+        adTest.style.top = '-10px';
+        adTest.style.left = '-10px';
+        document.body.appendChild(adTest);
+        await new Promise(r => setTimeout(r, 150));
+        const adBlocked = (adTest.offsetHeight === 0 || adTest.clientHeight === 0 || adTest.offsetParent === null);
+        document.body.removeChild(adTest);
+        if (adBlocked) {
+            setCheck('check-adblock', false, 'Ad blocker active');
+            showGlobalError('Ad blocker detected. Please disable it to continue.');
+            return;
+        }
+        setCheck('check-adblock', true);
+
+        // 4. Privacy browser check (Tor etc.)
+        const ua = navigator.userAgent.toLowerCase();
+        if (ua.includes('tor') || (navigator.productSub === '20100101' && navigator.vendor === '')) {
+            setCheck('check-privacy', false, 'Privacy browser');
+            showGlobalError('Private/anonymous browsers are not supported.');
+            return;
+        }
+        setCheck('check-privacy', true);
+
+        // 5. Network connectivity: Google main server
+        try {
+            await fetchWithTimeout('https://www.google.com/generate_204', 3000);
+            setCheck('check-google', true);
+        } catch (e) {
+            setCheck('check-google', false, 'No internet or Google unreachable');
+            showGlobalError('Unable to reach Google services. Check your internet connection.');
+            return;
+        }
+
+        // 6. Google APIs
+        try {
+            await fetchWithTimeout('https://www.googleapis.com/', 3000);
+            setCheck('check-googleapis', true);
+        } catch (e) {
+            setCheck('check-googleapis', false, 'Google APIs unreachable');
+            showGlobalError('Cannot connect to Google APIs. Try again later.');
+            return;
+        }
+
+        // 7. Firebase Auth (via import and auth state)
+        try {
+            const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+            const { getAuth, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+
+            const firebaseConfig = {
+                apiKey: "AIzaSyDo6z9MrH-icSD85Q8lylaBMCj66gHbDs4",
+                authDomain: "social-wars-2a532.firebaseapp.com",
+                projectId: "social-wars-2a532",
+                storageBucket: "social-wars-2a532.firebasestorage.app",
+                messagingSenderId: "540372566529",
+                appId: "1:540372566529:web:f419eb34cfa4d4a41b3600",
+                measurementId: "G-TYZNPG9Z8F"
+            };
+
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+
+            const authReady = new Promise((resolve, reject) => {
+                const timeout = setTimeout(() => reject(new Error('Firebase Auth timed out')), 5000);
+                const unsubscribe = onAuthStateChanged(auth, (user) => {
+                    clearTimeout(timeout);
+                    unsubscribe();
+                    resolve(user);
+                }, (err) => {
+                    clearTimeout(timeout);
+                    reject(err);
+                });
+            });
+
+            const user = await authReady;
+            setCheck('check-firebase-auth', true);
+
+            // 8. Firebase Storage connectivity test (reach the bucket)
+            try {
+                await fetchWithTimeout('https://firebasestorage.googleapis.com/v0/b/social-wars-2a532.firebasestorage.app/o/healthcheck', 3000);
+                setCheck('check-firebase-storage', true);
+            } catch (e) {
+                setCheck('check-firebase-storage', false, 'Storage unreachable');
+                showGlobalError('Cannot reach Firebase Storage. The game assets may be unavailable.');
+                // Continue? Might be non‑critical, but we stop.
+                return;
+            }
+
+            // 9. Session validation already done (user object)
+            setCheck('check-session', true);
+
+            // All checks passed
+            document.getElementById('all-ok-msg').style.display = 'block';
+            setTimeout(() => {
+                if (user) {
+                    window.location.href = 'play.html';
+                } else {
+                    window.location.href = 'login.html';
+                }
+            }, 800);
+
+        } catch (err) {
+            console.error(err);
+            const msg = err.message.includes('timed out') ? 'Firebase connection timed out.' :
+                        err.message.includes('network') ? 'Network error reaching Firebase.' :
+                        'Firebase services are currently unreachable.';
+            setCheck('check-firebase-auth', false, msg);
+            showGlobalError(msg + ' Please try again.');
+        }
+
+    })();
+</script>
 </body>
 </html>
