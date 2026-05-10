@@ -28,21 +28,31 @@
         }
         button:hover { background: #2d4373; }
         button:disabled { background: #aaa; cursor: not-allowed; }
+        .progress-bar {
+            display: none; width: 100%; height: 4px; background: #eee; border-radius: 2px; margin-bottom: 10px;
+        }
+        .progress-fill {
+            height: 100%; background: #3b5998; border-radius: 2px; transition: width 0.3s;
+        }
     </style>
 </head>
 <body>
 <div class="check-box">
     <h1>Social Wars</h1>
+    <div class="progress-bar" id="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
     <div id="checks">
         <div class="check-row" id="check-anti-frame"><span class="check-icon">⏳</span><span class="check-label">Anti‑frame protection</span></div>
         <div class="check-row" id="check-webdriver"><span class="check-icon">⏳</span><span class="check-label">Browser automation detection</span></div>
         <div class="check-row" id="check-adblock"><span class="check-icon">⏳</span><span class="check-label">Ad blocker verification</span></div>
         <div class="check-row" id="check-privacy"><span class="check-icon">⏳</span><span class="check-label">Privacy browser check</span></div>
+        <div class="check-row" id="check-console"><span class="check-icon">⏳</span><span class="check-label">Developer tools detection</span></div>
         <div class="check-row" id="check-google"><span class="check-icon">⏳</span><span class="check-label">Google connectivity</span></div>
         <div class="check-row" id="check-googleapis"><span class="check-icon">⏳</span><span class="check-label">Google APIs</span></div>
         <div class="check-row" id="check-firebase-auth"><span class="check-icon">⏳</span><span class="check-label">Firebase Auth</span></div>
         <div class="check-row" id="check-firebase-storage"><span class="check-icon">⏳</span><span class="check-label">Firebase Storage</span></div>
         <div class="check-row" id="check-session"><span class="check-icon">⏳</span><span class="check-label">Session validation</span></div>
+        <!-- AI verification row (hidden unless enabled) -->
+        <div class="check-row" id="check-ai" style="display:none"><span class="check-icon">⏳</span><span class="check-label">AI security scan</span></div>
     </div>
     <div id="global-error" class="error-msg"></div>
     <div id="all-ok-msg" class="all-ok">✅ All checks passed. Redirecting...</div>
@@ -51,41 +61,58 @@
 
 <script>
     (async function() {
+        // -- Helper functions --
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+        
         const checks = {
             'check-anti-frame': false,
             'check-webdriver': false,
             'check-adblock': false,
             'check-privacy': false,
+            'check-console': false,
             'check-google': false,
             'check-googleapis': false,
             'check-firebase-auth': false,
             'check-firebase-storage': false,
-            'check-session': false
+            'check-session': false,
+            // 'check-ai': false   // uncomment if AI check enabled
         };
+
+        const totalChecks = Object.keys(checks).length;
+        let completedChecks = 0;
+        const progressBar = document.getElementById('progress-bar');
+        const progressFill = document.getElementById('progress-fill');
+        progressBar.style.display = 'block';
+
+        function updateProgress() {
+            completedChecks++;
+            const percent = Math.round((completedChecks / totalChecks) * 100);
+            progressFill.style.width = percent + '%';
+        }
 
         function setCheck(id, success, message) {
             const row = document.getElementById(id);
             const icon = row.querySelector('.check-icon');
             icon.textContent = success ? '✅' : '❌';
-            if (!success && message) {
-                row.querySelector('.check-label').textContent += ' (' + message + ')';
-            }
+            const label = row.querySelector('.check-label');
+            if (message) label.textContent += ' (' + message + ')';
             checks[id] = success;
+            updateProgress();
         }
 
         function showGlobalError(msg) {
             document.getElementById('global-error').style.display = 'block';
             document.getElementById('global-error').textContent = msg;
             document.getElementById('retry-btn').style.display = 'block';
+            document.querySelector('.check-box h1').textContent = 'Access Restricted';
         }
 
         async function fetchWithTimeout(url, timeout = 3000) {
             const controller = new AbortController();
             const id = setTimeout(() => controller.abort(), timeout);
             try {
-                const response = await fetch(url, { mode: 'no-cors', signal: controller.signal });
+                await fetch(url, { mode: 'no-cors', signal: controller.signal });
                 clearTimeout(id);
-                // no-cors opaque response – any response means network reachable
                 return true;
             } catch (err) {
                 clearTimeout(id);
@@ -93,72 +120,106 @@
             }
         }
 
-        // 1. Anti‑frame
-        if (window.top !== window.self) {
-            setCheck('check-anti-frame', false, 'Framed access denied');
-            showGlobalError('Access denied: page loaded in a frame.');
-            return;
-        }
-        setCheck('check-anti-frame', true);
+        // Delay between checks (20 seconds)
+        const CHECK_DELAY = 20000; // 20 seconds
 
-        // 2. WebDriver
-        if (navigator.webdriver) {
-            setCheck('check-webdriver', false, 'Automated browser detected');
-            showGlobalError('Automated browsing is not allowed.');
-            return;
-        }
-        setCheck('check-webdriver', true);
-
-        // 3. Adblock detection (bait element)
-        const adTest = document.createElement('div');
-        adTest.className = 'adsbox';
-        adTest.style.height = '1px';
-        adTest.style.width = '1px';
-        adTest.style.position = 'absolute';
-        adTest.style.top = '-10px';
-        adTest.style.left = '-10px';
-        document.body.appendChild(adTest);
-        await new Promise(r => setTimeout(r, 150));
-        const adBlocked = (adTest.offsetHeight === 0 || adTest.clientHeight === 0 || adTest.offsetParent === null);
-        document.body.removeChild(adTest);
-        if (adBlocked) {
-            setCheck('check-adblock', false, 'Ad blocker active');
-            showGlobalError('Ad blocker detected. Please disable it to continue.');
-            return;
-        }
-        setCheck('check-adblock', true);
-
-        // 4. Privacy browser check (Tor etc.)
-        const ua = navigator.userAgent.toLowerCase();
-        if (ua.includes('tor') || (navigator.productSub === '20100101' && navigator.vendor === '')) {
-            setCheck('check-privacy', false, 'Privacy browser');
-            showGlobalError('Private/anonymous browsers are not supported.');
-            return;
-        }
-        setCheck('check-privacy', true);
-
-        // 5. Network connectivity: Google main server
+        // -- Start checks sequentially --
         try {
-            await fetchWithTimeout('https://www.google.com/generate_204', 3000);
-            setCheck('check-google', true);
-        } catch (e) {
-            setCheck('check-google', false, 'No internet or Google unreachable');
-            showGlobalError('Unable to reach Google services. Check your internet connection.');
-            return;
-        }
 
-        // 6. Google APIs
-        try {
-            await fetchWithTimeout('https://www.googleapis.com/', 3000);
-            setCheck('check-googleapis', true);
-        } catch (e) {
-            setCheck('check-googleapis', false, 'Google APIs unreachable');
-            showGlobalError('Cannot connect to Google APIs. Try again later.');
-            return;
-        }
+            // 1. Anti‑frame
+            if (window.top !== window.self) {
+                setCheck('check-anti-frame', false, 'Framed access denied');
+                showGlobalError('Access denied: page loaded in a frame.');
+                return;
+            }
+            setCheck('check-anti-frame', true);
+            await sleep(CHECK_DELAY);
 
-        // 7. Firebase Auth (via import and auth state)
-        try {
+            // 2. WebDriver / automation
+            if (navigator.webdriver) {
+                setCheck('check-webdriver', false, 'Automated browser detected');
+                showGlobalError('Automated browsing is not allowed.');
+                return;
+            }
+            setCheck('check-webdriver', true);
+            await sleep(CHECK_DELAY);
+
+            // 3. Adblock detection
+            const adTest = document.createElement('div');
+            adTest.className = 'adsbox';
+            adTest.style.height = '1px';
+            adTest.style.width = '1px';
+            adTest.style.position = 'absolute';
+            adTest.style.top = '-10px';
+            adTest.style.left = '-10px';
+            document.body.appendChild(adTest);
+            await sleep(200);
+            const adBlocked = (adTest.offsetHeight === 0 || adTest.clientHeight === 0 || adTest.offsetParent === null);
+            document.body.removeChild(adTest);
+            if (adBlocked) {
+                setCheck('check-adblock', false, 'Ad blocker active');
+                showGlobalError('Ad blocker detected. Please disable it to continue.');
+                return;
+            }
+            setCheck('check-adblock', true);
+            await sleep(CHECK_DELAY);
+
+            // 4. Privacy browser (Tor, etc.)
+            const ua = navigator.userAgent.toLowerCase();
+            if (ua.includes('tor') || (navigator.productSub === '20100101' && navigator.vendor === '')) {
+                setCheck('check-privacy', false, 'Privacy browser');
+                showGlobalError('Private/anonymous browsers are not supported.');
+                return;
+            }
+            setCheck('check-privacy', true);
+            await sleep(CHECK_DELAY);
+
+            // 5. Console / DevTools open detection
+            let devtoolsOpen = false;
+            const threshold = 160;
+            const detectDevTools = () => {
+                const widthThreshold = window.outerWidth - window.innerWidth > threshold;
+                const heightThreshold = window.outerHeight - window.innerHeight > threshold;
+                if (widthThreshold || heightThreshold) devtoolsOpen = true;
+            };
+            detectDevTools();
+            // Also check via performance timing trick
+            const start = performance.now();
+            debugger;
+            const timeDiff = performance.now() - start;
+            if (timeDiff > 100) devtoolsOpen = true;  // debugger statement paused if DevTools open
+
+            if (devtoolsOpen) {
+                setCheck('check-console', false, 'Developer tools open');
+                showGlobalError('Please close developer tools to continue.');
+                return;
+            }
+            setCheck('check-console', true);
+            await sleep(CHECK_DELAY);
+
+            // 6. Google connectivity
+            try {
+                await fetchWithTimeout('https://www.google.com/generate_204', 3000);
+                setCheck('check-google', true);
+            } catch (e) {
+                setCheck('check-google', false, 'No internet or Google unreachable');
+                showGlobalError('Unable to reach Google services. Check your internet connection.');
+                return;
+            }
+            await sleep(CHECK_DELAY);
+
+            // 7. Google APIs
+            try {
+                await fetchWithTimeout('https://www.googleapis.com/', 3000);
+                setCheck('check-googleapis', true);
+            } catch (e) {
+                setCheck('check-googleapis', false, 'Google APIs unreachable');
+                showGlobalError('Cannot connect to Google APIs. Try again later.');
+                return;
+            }
+            await sleep(CHECK_DELAY);
+
+            // 8. Firebase Auth
             const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
             const { getAuth, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
 
@@ -176,7 +237,7 @@
             const auth = getAuth(app);
 
             const authReady = new Promise((resolve, reject) => {
-                const timeout = setTimeout(() => reject(new Error('Firebase Auth timed out')), 5000);
+                const timeout = setTimeout(() => reject(new Error('Firebase Auth timed out')), 8000);
                 const unsubscribe = onAuthStateChanged(auth, (user) => {
                     clearTimeout(timeout);
                     unsubscribe();
@@ -186,43 +247,62 @@
                     reject(err);
                 });
             });
-
             const user = await authReady;
             setCheck('check-firebase-auth', true);
+            await sleep(CHECK_DELAY);
 
-            // 8. Firebase Storage connectivity test (reach the bucket)
+            // 9. Firebase Storage
             try {
-                await fetchWithTimeout('https://firebasestorage.googleapis.com/v0/b/social-wars-2a532.firebasestorage.app/o/healthcheck', 3000);
+                await fetchWithTimeout('https://firebasestorage.googleapis.com/v0/b/social-wars-2a532.firebasestorage.app/o/healthcheck', 4000);
                 setCheck('check-firebase-storage', true);
             } catch (e) {
                 setCheck('check-firebase-storage', false, 'Storage unreachable');
-                showGlobalError('Cannot reach Firebase Storage. The game assets may be unavailable.');
-                // Continue? Might be non‑critical, but we stop.
+                showGlobalError('Cannot reach Firebase Storage. Game assets may be unavailable.');
                 return;
             }
+            await sleep(CHECK_DELAY);
 
-            // 9. Session validation already done (user object)
+            // 10. Session validation (user object)
             setCheck('check-session', true);
+            await sleep(CHECK_DELAY);
+
+            // (Optional) AI Security Scan using external services
+            // You can integrate DeepSeek, Claude, ChatGPT, Gemini, Grok by sending the user's
+            // environment data (user-agent, IP metadata, etc.) to an API endpoint for verification.
+            // Example (commented out):
+            /*
+            const aiCheckRow = document.getElementById('check-ai');
+            aiCheckRow.style.display = 'flex';
+            try {
+                const aiResponse = await fetch('https://api.your-ai-service.com/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer YOUR_KEY' },
+                    body: JSON.stringify({ userAgent: navigator.userAgent, language: navigator.language })
+                });
+                if (!aiResponse.ok) throw new Error('AI suspicion');
+                setCheck('check-ai', true);
+            } catch (err) {
+                setCheck('check-ai', false, 'AI verification failed');
+                showGlobalError('Your session has been flagged by AI security.');
+                return;
+            }
+            await sleep(CHECK_DELAY);
+            */
 
             // All checks passed
             document.getElementById('all-ok-msg').style.display = 'block';
-            setTimeout(() => {
-                if (user) {
-                    window.location.href = 'play.html';
-                } else {
-                    window.location.href = 'login.html';
-                }
-            }, 800);
+            document.getElementById('progress-fill').style.background = '#1e8449';
+            await sleep(1500);
+            if (user) {
+                window.location.href = 'play.html';
+            } else {
+                window.location.href = 'login.html';
+            }
 
         } catch (err) {
             console.error(err);
-            const msg = err.message.includes('timed out') ? 'Firebase connection timed out.' :
-                        err.message.includes('network') ? 'Network error reaching Firebase.' :
-                        'Firebase services are currently unreachable.';
-            setCheck('check-firebase-auth', false, msg);
-            showGlobalError(msg + ' Please try again.');
+            showGlobalError('A critical error occurred. Please try again later.');
         }
-
     })();
 </script>
 </body>
