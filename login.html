@@ -356,7 +356,7 @@
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!regex.test(email)) return 'Invalid email address format.';
         const domain = email.split('@')[1].toLowerCase();
-        if (!ALLOWED_DOMAINS.includes(domain)) return 'Only personal email addresses are allowed (Gmail, Outlook, Yahoo, iCloud, etc.).';
+        if (!ALLOWED_DOMAINS.includes(domain)) return 'Invalid email address';
         return null;
     }
     function setupEmailFeedback(inputId, feedbackId) {
