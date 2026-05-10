@@ -83,17 +83,27 @@
                 vertical-align: middle;
                 margin-left: 2px;
             }
+            #userAvatar {
+                width: 20px;
+                height: 20px;
+                vertical-align: middle;
+                margin: 0 4px;
+            }
         </style>
     </head>
     <body>
         <div id="header">
             <div id="session">
-                <p style="display:inline">Welcome <b>{{save_info.name}}</b>! Level {{save_info.level}} (<a href="/">Log Out</a>)</p>
+                <p style="display:inline">
+                    ¡Welcome, <b id="usernameDisplay">...</b>!
+                    <img id="userAvatar" src="img/worker.png" alt="Worker"/>
+                    - <a href="#" id="logoutBtn">Log Out</a>
+                </p>
             </div>
         </div>
         <br>
         <div id="gameBar">
-            <img class="header-img" src="img/socialwarsheader.jpg" alt="Social Wars"/>
+            <img id="headerImg" class="header-img" src="img/socialwarsheader.jpg" alt="Social Wars"/>
             <div id="gamebar_buttons">
                 <a class="gameBarButton" href="#"><div><img src="img/gift.png" alt="">Free Gifts</div></a>
                 <a class="gameBarButton gameBarButtonSelected" href="#"><div><img alt="">Play</div></a>
@@ -136,6 +146,50 @@
                         }));
                     }
                 }, 500);
+            });
+        </script>
+        <script type="module">
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+            import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+            const firebaseConfig = {
+                apiKey: "AIzaSyDo6z9MrH-icSD85Q8lylaBMCj66gHbDs4",
+                authDomain: "social-wars-2a532.firebaseapp.com",
+                projectId: "social-wars-2a532",
+                storageBucket: "social-wars-2a532.firebasestorage.app",
+                messagingSenderId: "540372566529",
+                appId: "1:540372566529:web:f419eb34cfa4d4a41b3600",
+                measurementId: "G-TYZNPG9Z8F"
+            };
+
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+
+            // Random header image (changes on every login/page load)
+            const headerImages = [
+                'img/monsterlegends.jpg',
+                'img/dragoncity.jpg',
+                // 'img/socialwarsheader.jpg'  // commented out as requested
+            ];
+            const randomIndex = Math.floor(Math.random() * headerImages.length);
+            document.getElementById('headerImg').src = headerImages[randomIndex];
+
+            // Protect page: redirect if not logged in
+            onAuthStateChanged(auth, (user) => {
+                if (!user) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                // Show username
+                const displayName = user.displayName || 'User';
+                document.getElementById('usernameDisplay').textContent = displayName;
+            });
+
+            // Log out button
+            document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+                e.preventDefault();
+                await signOut(auth);
+                window.location.href = 'login.html';
             });
         </script>
     </body>
