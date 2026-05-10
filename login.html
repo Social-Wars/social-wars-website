@@ -510,17 +510,15 @@
     });
 
     // ── NEED HELP - Change Email ──
-    document.getElementById('btnHelpEmail').addEventListener('click', () => {
+    document.getElementById('btnHelpEmail').addEventListener('click', async () => {
         const email = document.getElementById('helpChangeEmail').value.trim();
         if (!email) { showHelpMsg('msgHelpEmail', 'Please enter your email address.', 'error'); return; }
         const err = validateEmail(email);
         if (err) { showHelpMsg('msgHelpEmail', err, 'error'); return; }
-        const subject = encodeURIComponent('Social Wars Change Email Request');
-        const body = encodeURIComponent('Current Email: ' + email + '
-
-I would like to change my email address associated with my Social Wars account. Please contact me to proceed.');
-        window.location.href = 'mailto:ericrabwoof@gmail.com?subject=' + subject + '&body=' + body;
-        showHelpMsg('msgHelpEmail', 'Opening your email app... If it does not open, contact us at ericrabwoof@gmail.com', 'success');
+        try {
+            await sendPasswordResetEmail(auth, email);
+            showHelpMsg('msgHelpEmail', 'Email change request sent! Check your inbox.', 'success');
+        } catch (e) { showHelpMsg('msgHelpEmail', firebaseError(e.code), 'error'); }
     });
 
     // ── NEED HELP - Delete Account ──
