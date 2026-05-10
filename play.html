@@ -95,9 +95,7 @@
         <div id="header">
             <div id="session">
                 <p style="display:inline">
-                    ¡Welcome, <b id="usernameDisplay">...</b>!
-                    <img id="userAvatar" src="img/worker.png" alt="Worker"/>
-                    - <a href="#" id="logoutBtn">Log Out</a>
+                    ¡Welcome, <img id="userAvatar" src="img/worker.png" alt="Worker"/> <b id="usernameDisplay">...</b>! - <a href="#" id="logoutBtn">Log Out</a>
                 </p>
             </div>
         </div>
@@ -165,14 +163,24 @@
             const app = initializeApp(firebaseConfig);
             const auth = getAuth(app);
 
-            // Random header image (changes on every login/page load)
+            // Header image selection: persists until explicit logout
+            const HEADER_STORAGE_KEY = 'sw_header_img';
             const headerImages = [
                 'img/monsterlegends.jpg',
-                'img/dragoncity.jpg',
-                // 'img/socialwarsheader.jpg'  // commented out as requested
+                'img/dragoncity.jpg'
+                // 'img/socialwarsheader.jpg' // commented out as requested
             ];
-            const randomIndex = Math.floor(Math.random() * headerImages.length);
-            document.getElementById('headerImg').src = headerImages[randomIndex];
+
+            function getOrSetHeader() {
+                let stored = localStorage.getItem(HEADER_STORAGE_KEY);
+                if (!stored) {
+                    const randomIndex = Math.floor(Math.random() * headerImages.length);
+                    stored = headerImages[randomIndex];
+                    localStorage.setItem(HEADER_STORAGE_KEY, stored);
+                }
+                document.getElementById('headerImg').src = stored;
+            }
+            getOrSetHeader();
 
             // Protect page: redirect if not logged in
             onAuthStateChanged(auth, (user) => {
@@ -180,14 +188,14 @@
                     window.location.href = 'login.html';
                     return;
                 }
-                // Show username
                 const displayName = user.displayName || 'User';
                 document.getElementById('usernameDisplay').textContent = displayName;
             });
 
-            // Log out button
+            // Log out: clear stored header so next login picks a new one
             document.getElementById('logoutBtn').addEventListener('click', async (e) => {
                 e.preventDefault();
+                localStorage.removeItem(HEADER_STORAGE_KEY);
                 await signOut(auth);
                 window.location.href = 'login.html';
             });
