@@ -4,22 +4,27 @@
         <meta charset="utf-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <title>Social Wars</title>
-        <link rel="shortcut icon" href="https://web.archive.org/web/20140601135001im_/https://fbcdn-photos-e-a.akamaihd.net/hphotos-ak-xpa1/t39.2080-0/851579_577252918974734_1364279235_n.gif"/>
-        <link rel="icon" type="image/gif" href="https://web.archive.org/web/20140601135001im_/https://fbcdn-photos-e-a.akamaihd.net/hphotos-ak-xpa1/t39.2080-0/851579_577252918974734_1364279235_n.gif"/>
+
+        <link rel="shortcut icon" href="ID_FAVICON_URL_HERE"/>
+        <link rel="icon" type="image/gif" href="ID_FAVICON_URL_HERE"/>
+
         <style>
             body {
                 font-family: 'lucida grande', tahoma, verdana, arial, sans-serif;
                 text-align: center;
             }
+
             #header {
                 width: 760px;
                 margin-top: 50px;
                 margin-left: auto;
                 margin-right: auto;
             }
+
             #session {
                 float: right;
             }
+
             #gameBar {
                 text-align: left;
                 width: 760px;
@@ -29,11 +34,13 @@
                 margin-left: auto;
                 margin-right: auto;
             }
+
             #gameBar img.header-img {
                 display: block;
                 width: 760px;
                 height: auto;
             }
+
             #gamebar_buttons {
                 background-color: rgb(97, 104, 7);
                 border: solid rgb(65, 70, 3) 3px;
@@ -41,6 +48,7 @@
                 border-top-left-radius: 6px;
                 border-top-right-radius: 6px;
             }
+
             .gameBarButton {
                 display: inline-block;
                 height: 19px;
@@ -55,34 +63,42 @@
                 font-size: 11pt;
                 padding: 2px 3px 1px 3px;
             }
+
             .gameBarButtonSelected {
                 background-color: rgb(233, 221, 81);
             }
+
             .gameBarButton img {
                 height: 17px;
                 padding-right: 3px;
                 vertical-align: middle;
             }
+
             .gameBarButton:hover {
                 background-color: rgb(250, 237, 90);
                 text-decoration: none;
             }
+
             .gameBarButtonSelected:hover {
                 background-color: rgb(223, 212, 82);
             }
+
             .gameBarButtonRed {
                 background-color: rgb(180, 30, 30);
                 border-color: rgb(120, 10, 10);
                 color: white;
             }
+
             .gameBarButtonRed:hover {
                 background-color: rgb(200, 50, 50);
             }
+
             .globe-emoji {
                 font-size: 13px;
                 vertical-align: middle;
                 margin-left: 2px;
             }
+
             #userAvatar {
                 width: 20px;
                 height: 20px;
@@ -91,9 +107,9 @@
             }
         </style>
     </head>
+
     <body>
 
-        <!-- ═══ INDEX VERIFICATION GUARD ═══ -->
         <script>
             if (!sessionStorage.getItem('index_verified')) {
                 window.location.href = 'index.html';
@@ -103,47 +119,115 @@
         <div id="header">
             <div id="session">
                 <p style="display:inline">
-                    ¡Welcome, <img id="userAvatar" src="img/worker.png" alt="Worker"/> <b id="usernameDisplay">...</b>! - <a href="#" id="logoutBtn">Log Out</a>
+                    ¡Welcome,
+                    <img id="userAvatar" src="img/worker.png" alt="Worker"/>
+                    <b id="usernameDisplay">...</b>!
+                    -
+                    <a href="#" id="logoutBtn">Log Out</a>
                 </p>
             </div>
         </div>
+
         <br>
+
         <div id="gameBar">
-            <img id="headerImg" class="header-img" src="img/socialwarsheader.jpg" alt="Social Wars"/>
+
+            <img
+                id="headerImg"
+                class="header-img"
+                src="img/socialwarsheader.jpg"
+                alt="Social Wars"
+            />
+
             <div id="gamebar_buttons">
-                <a class="gameBarButton" href="#"><div><img src="img/gift.png" alt="">Free Gifts</div></a>
-                <a class="gameBarButton gameBarButtonSelected" href="#"><div><img alt="">Play</div></a>
-                <a class="gameBarButton gameBarButtonRed" href="#"><div><img src="img/cash.png" alt="">Get Cash</div></a>
-                <a class="gameBarButton" href="#"><div>Invite</div></a>
-                <a class="gameBarButton" href="#"><div>Fan Page</div></a>
-                <a class="gameBarButton" href="#"><div>Forums</div></a>
-                <a class="gameBarButton gameBarButtonRed" href="#"><div><img src="img/chat.png" alt="">21</div></a><span class="globe-emoji">🌍</span>
+                <a class="gameBarButton" href="#">
+                    <div><img src="img/gift.png" alt="">Free Gifts</div>
+                </a>
+
+                <a class="gameBarButton gameBarButtonSelected" href="#">
+                    <div><img alt="">Play</div>
+                </a>
+
+                <a class="gameBarButton gameBarButtonRed" href="#">
+                    <div><img src="img/cash.png" alt="">Get Cash</div>
+                </a>
+
+                <a class="gameBarButton" href="#">
+                    <div>Invite</div>
+                </a>
+
+                <a class="gameBarButton" href="#">
+                    <div>Fan Page</div>
+                </a>
+
+                <a class="gameBarButton" href="#">
+                    <div>Forums</div>
+                </a>
+
+                <a class="gameBarButton gameBarButtonRed" href="#">
+                    <div><img src="img/chat.png" alt="">21</div>
+                </a>
+
+                <span class="globe-emoji">🌍</span>
             </div>
-            <embed id="swf"
-                src="http://{{SERVERIP}}:{{SERVERPORT}}/static/socialwars/flash/SWLoader.swf?swftoload=/static/socialwars/flash/{{GAMEVERSION}}"
-                allowfullscreen="true" bgcolor="#669C2C" quality="high" width="760" height="600" name="se"
-                type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer"
-                flashvars='spdebug=notnull&brk=0
-                &staticUrl=http://{{SERVERIP}}:{{SERVERPORT}}/static/socialwars/&brk=0
-                &dynamicUrl=http://{{SERVERIP}}:{{SERVERPORT}}/dynamic/menvswomen/srvsexwars/&brk=0
+
+            <embed
+                id="swf"
+
+                src="http://ID_SERVER_IP:ID_SERVER_PORT/static/socialwars/flash/SWLoader.swf?swftoload=/static/socialwars/flash/ID_GAME_VERSION"
+
+                allowfullscreen="true"
+                bgcolor="#669C2C"
+                quality="high"
+                width="760"
+                height="600"
+                name="se"
+                type="application/x-shockwave-flash"
+                pluginspage="http://www.macromedia.com/go/getflashplayer"
+
+                flashvars='
+                spdebug=notnull&brk=0
+
+                &staticUrl=http://ID_SERVER_IP:ID_SERVER_PORT/static/socialwars/&brk=0
+
+                &dynamicUrl=http://ID_SERVER_IP:ID_SERVER_PORT/dynamic/ID_DYNAMIC_PATH/&brk=0
+
                 &skiphash12341=notnull&brk=0
-                &fb_sig_user={{save_info.userid}}&brk=0
-                &user_key=123456789&brk=0
+
+                &fb_sig_user=ID_USER_ID_VARIABLE&brk=0
+
+                &user_key=ID_USER_KEY_HERE&brk=0
+
                 &language=en&brk=0
-                &accessToken=AAABbZAm0wdMUBALsOrR0Ho68CLjaOT8SV3vftKg9mbo1zZColaW5FljRVaLxPGxXXnm1M98mTZCAttcQ4GHwvSyXfsyxYmvKMH8Hmn5iliSPnjvIsZA6&brk=0
+
+                &accessToken=ID_ACCESS_TOKEN_HERE&brk=0
+
                 &sex=m&brk=0
-                &lastLoggedIn=1349266517&brk=0
+
+                &lastLoggedIn=ID_LAST_LOGIN_TIMESTAMP&brk=0
+
                 &dailyBonus=0&brk=0
-                &friendsInfo={{friendsInfo | tojson}}&brk=0
-                &serverTime={{serverTime}}&brk=0
+
+                &friendsInfo=ID_FRIENDS_JSON_DATA&brk=0
+
+                &serverTime=ID_SERVER_TIME&brk=0
+
                 &forceSyncError=1&brk=0
+
                 &forceAttackReload=0&brk=0
-                &forceQuestReload=0&brk=0'/>
+
+                &forceQuestReload=0&brk=0
+                '
+            />
         </div>
+
         <script>
-            window.addEventListener('load', function() {
-                setTimeout(function() {
+            window.addEventListener('load', function () {
+
+                setTimeout(function () {
+
                     var swf = document.getElementById('swf');
+
                     if (swf) {
                         swf.dispatchEvent(new MouseEvent('click', {
                             bubbles: true,
@@ -151,58 +235,104 @@
                             view: window
                         }));
                     }
+
                 }, 500);
+
             });
         </script>
+
         <script type="module">
-            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-            import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+            import {
+                initializeApp
+            } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+
+            import {
+                getAuth,
+                onAuthStateChanged,
+                signOut
+            } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
             const firebaseConfig = {
-                apiKey: "AIzaSyDo6z9MrH-icSD85Q8lylaBMCj66gHbDs4",
-                authDomain: "social-wars-2a532.firebaseapp.com",
-                projectId: "social-wars-2a532",
-                storageBucket: "social-wars-2a532.firebasestorage.app",
-                messagingSenderId: "540372566529",
-                appId: "1:540372566529:web:f419eb34cfa4d4a41b3600",
-                measurementId: "G-TYZNPG9Z8F"
+
+                apiKey: "ID_FIREBASE_API_KEY",
+
+                authDomain: "ID_FIREBASE_AUTH_DOMAIN",
+
+                projectId: "ID_FIREBASE_PROJECT_ID",
+
+                storageBucket: "ID_FIREBASE_STORAGE_BUCKET",
+
+                messagingSenderId: "ID_FIREBASE_SENDER_ID",
+
+                appId: "ID_FIREBASE_APP_ID",
+
+                measurementId: "ID_FIREBASE_MEASUREMENT_ID"
             };
 
             const app = initializeApp(firebaseConfig);
             const auth = getAuth(app);
 
             const HEADER_STORAGE_KEY = 'sw_header_img';
+
             const headerImages = [
                 'img/monsterlegends.jpg',
                 'img/dragoncity.jpg'
             ];
 
             function getOrSetHeader() {
+
                 let stored = localStorage.getItem(HEADER_STORAGE_KEY);
+
                 if (!stored) {
-                    const randomIndex = Math.floor(Math.random() * headerImages.length);
+
+                    const randomIndex = Math.floor(
+                        Math.random() * headerImages.length
+                    );
+
                     stored = headerImages[randomIndex];
-                    localStorage.setItem(HEADER_STORAGE_KEY, stored);
+
+                    localStorage.setItem(
+                        HEADER_STORAGE_KEY,
+                        stored
+                    );
                 }
+
                 document.getElementById('headerImg').src = stored;
             }
+
             getOrSetHeader();
 
             onAuthStateChanged(auth, (user) => {
+
                 if (!user) {
+
                     window.location.href = 'login.html';
                     return;
                 }
+
                 const displayName = user.displayName || 'User';
-                document.getElementById('usernameDisplay').textContent = displayName;
+
+                document.getElementById(
+                    'usernameDisplay'
+                ).textContent = displayName;
             });
 
-            document.getElementById('logoutBtn').addEventListener('click', async (e) => {
-                e.preventDefault();
-                localStorage.removeItem(HEADER_STORAGE_KEY);
-                await signOut(auth);
-                window.location.href = 'login.html';
-            });
+            document.getElementById('logoutBtn')
+                .addEventListener('click', async (e) => {
+
+                    e.preventDefault();
+
+                    localStorage.removeItem(
+                        HEADER_STORAGE_KEY
+                    );
+
+                    await signOut(auth);
+
+                    window.location.href = 'login.html';
+                });
+
         </script>
+
     </body>
 </html>
